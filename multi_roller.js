@@ -9,11 +9,6 @@ $(document).ready(function() {
   let rollset2 = _add_rollset("Goblin Damage", 2, 8);
   _add_roll_to_rollset(rollset2, "Goblin Warrior", 3);
   _add_roll_to_rollset(rollset2, "Goblin Wizard", -2);
-
-  let rollset3 = _add_rollset("Coin Flips", 1, 3);
-  _add_roll_to_rollset(rollset3, "Coin One", 0);
-  _add_roll_to_rollset(rollset3, "Coin Two", 2);
-  _add_roll_to_rollset(rollset3, "Coin Three", -2);
 });
 
 let add_rollset = function(e) {
@@ -54,10 +49,7 @@ let _add_rollset = function(rollset_name, dice=1, sides=20) {
   }
   newrollset.removeAttr("id");
 
-  let roll_placeholder = $("#roll_template").clone();
-  roll_placeholder.removeAttr("id");
-  roll_placeholder.addClass("placeholder");
-  roll_placeholder.css("visibility", "hidden");
+  let roll_placeholder = _get_roll_placeholder();
 
   let roll_results = $("#roll_result_template").clone();
   roll_results.removeAttr("id");
@@ -89,6 +81,15 @@ let _add_rollset = function(rollset_name, dice=1, sides=20) {
   return newrollset;
 };
 
+var _get_roll_placeholder = function() {
+  let roll_placeholder = $("#roll_template").clone();
+  roll_placeholder.removeAttr("id");
+  roll_placeholder.addClass("placeholder");
+  roll_placeholder.css("visibility", "hidden");
+
+  return roll_placeholder;
+}
+
 var check_enter_roll = function(e) {
   if (event.keyCode == 13) {
       add_roll_to_rollset(e);
@@ -99,8 +100,8 @@ var multiroll = function(e) {
   let parent = $(event.target).parents(".rollset_rolls").first();
 
   let dice_data = parent.find(".roll_data").first();
-  let dice = dice_data.data("dice");
-  let sides = dice_data.data("sides");
+  let dice = Number(dice_data.data("dice"));
+  let sides = Number(dice_data.data("sides"));
 
   let modifier_doms = parent.find(".roll .modifier");
   let modifiers = [];
@@ -145,6 +146,7 @@ var multiroll = function(e) {
     let rolled = roll_totals[i];
     let modifier = modifiers[i];
     $(value).text(String(rolled));
+    console.log(`Crit on ${sides * dice + modifier}, crit fail on ${dice + modifier}`);
     if (rolled === sides * dice + modifier) {
       $(value).css('color', 'red');
     } else if (rolled === dice + modifier) {
@@ -162,18 +164,21 @@ var multiroll = function(e) {
 }
 
 var remove_roll = function(e) {
-  console.log(e);
   let parent = $(event.target).parent(".roll");
+  let grandparent = parent.parent();
   parent.remove();
+  console.log(grandparent.children(".roll").length);
+  if (!grandparent.children(".roll").length == 0) {
+    let roll_placeholder = _get_roll_placeholder();
+    grandparent.append(roll_placeholder);
+  }
 }
 
 var remove_rollset = function(e) {
   if (!confirm("Are you sure you want to remove this rollset?")) {
     return;
   }
-  console.log("Removing rollset...");
   let parent = $(event.target).parents(".rollset");
-  console.log(parent);
   parent.remove();
 }
 
@@ -191,7 +196,7 @@ var _add_roll_to_rollset = function(parent, name, modifier) {
 
   modifier = Number(modifier);
   if (!name) {
-    name = "Roll " + String(parent.find(".rollset_rolls > .roll").length);
+    name = "#" + String(parent.find(".rollset_rolls > .roll").length + 1);
   }
 
   let rolls_div = parent.children(".rollset_rolls").first();
@@ -204,6 +209,8 @@ var _add_roll_to_rollset = function(parent, name, modifier) {
   newroll.children(".modifier").text(String(modifier));
   newroll.removeAttr("id");
   rolls_div.append(newroll);
+
+  $("#rollsets .remove_roll").off("click");
   $("#rollsets .remove_roll").click(remove_roll);
 
   return newroll;
@@ -234,8 +241,11 @@ var save_data = function(e) {
 }
 
 var load_data = function(e) {
-  clear_data();
   let data = JSON.parse($("#data_loader").val());
+  if (!data) {
+    return;
+  }
+  clear_data();
 
   for (const rollset_data of data) {
     let rollset = _add_rollset(rollset_data.name, rollset_data.dice, rollset_data.sides);
