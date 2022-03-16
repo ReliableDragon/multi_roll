@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<head>
+  <title>Multi-Roller</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="multi_roller.js"></script>
+  <link rel="stylesheet" type="text/css" href="multi_roller.css">
+</head>
+<body>
+  <h1>Multi-Roller</h1>
+
+  <div class="data_storage">
+    <button id="save_button" onclick="save_data()">Save Data</button>
+    <button id="load_button" onclick="load_data()">Load Data</button>
+    <input id="data_loader" type=text />
+  </div>
+
+  <div class="add_rollset_container">
+    <button id="add_rollset">Add Roll Set</button>
+    <input type="text" id="add_rollset_name" placeholder="Roll Set Name" />
+  </div>
+
+  <div id="rollsets"></div>
+
+  <div id="rollset_template" class="rollset">
+    <div class="title_row_div">
+      <h2 class="rollset_name"></h2>
+      <div class="remove_row">Remove Row</div>
+    </div>
+
+    <div class="rollset_rolls">
+    </div>
+
+    <div class="add_roll_div">
+      <input type="text" class="roll_name" placeholder="Roll Name" />
+      <input type="number" class="roll_modifier" placeholder="Roll Modifier" />
+      <button class="add_roll">Add Roll</button>
+    </div>
+  </div>
+
+  <input type=button id="roll_button_template" class="roll_button" value="Multi-Roll!"></input>
+
+  <div class="roll" id="roll_template">
+    <p class="name">NAME_PLACEHOLDER</p>
+    <p class="modifier">MODIFIER_PLACEHOLDER</p>
+    <div class="result_div roll_result_line">
+      <p class="roll_result_text">Result: </p>
+      <p class="result value">0</p>
+    </div>
+    <div class="remove_roll">Remove Roll</div>
+  </div>
+
+  <div class="roll_result_container" id="roll_result_template">
+    <div class="best_div roll_result_line">
+      <p class="roll_result_text">Best: </p>
+      <p class="best value">0</p>
+    </div>
+    <div class="worst_div roll_result_line">
+      <p class="roll_result_text">Worst: </p>
+      <p class="worst value">0</p>
+    </div>
+  </div>
+
+</body>
