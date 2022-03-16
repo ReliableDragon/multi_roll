@@ -123,3 +123,11 @@
 .data_storage {
   margin: 1em auto;
 }
+
+#add_rollset {
+  height: 2em;
+}
+
+.add_roll {
+  height: 2em;
+}

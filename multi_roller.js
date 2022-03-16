@@ -98,9 +98,9 @@ var remove_roll = function(e) {
 }
 
 var remove_rollset = function(e) {
-  // if (!confirm("Are you sure you want to remove this rollset?")) {
-  //   return;
-  // }
+  if (!confirm("Are you sure you want to remove this rollset?")) {
+    return;
+  }
   console.log("Removing rollset...");
   let parent = $(event.target).parents(".rollset");
   console.log(parent);
