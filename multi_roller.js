@@ -9,6 +9,11 @@ $(document).ready(function() {
   let rollset2 = _add_rollset("Goblin Damage", 2, 8);
   _add_roll_to_rollset(rollset2, "Goblin Warrior", 3);
   _add_roll_to_rollset(rollset2, "Goblin Wizard", -2);
+
+  let rollset3 = _add_rollset("Coin Flips", 1, 3);
+  _add_roll_to_rollset(rollset3, "Coin One", 0);
+  _add_roll_to_rollset(rollset3, "Coin Two", 2);
+  _add_roll_to_rollset(rollset3, "Coin Three", -2);
 });
 
 let add_rollset = function(e) {
@@ -103,35 +108,55 @@ var multiroll = function(e) {
     modifiers.push(Number($(value).text()));
   });
 
-  let rolls = [];
+  let roll_totals = [];
+  let roll_dice = [];
   let high = null;
   let low = null;
 
   for (const modifier of modifiers) {
-    roll = 0;
+    let roll_values = [];
+    let roll = 0;
+    let total = 0;
     for (let i = 0; i < dice; i++) {
-      roll += Math.ceil(Math.random() * sides);
+      roll = Math.ceil(Math.random() * sides);
+      roll_values.push(roll);
+      total += roll;
     }
-    roll += modifier;
-    rolls.push(roll);
-    if (high == null || roll > high) {
-      high = roll;
+    total += modifier;
+    roll_totals.push(total);
+    roll_dice.push(roll_values);
+    if (high == null || total > high) {
+      high = total;
     }
-    if (low == null || roll < low) {
-      low = roll;
+    if (low == null || total < low) {
+      low = total;
     }
   }
-  let result_dom = parent.find(".result_div .result.value");
+  let result_totals = parent.find(".result_div .result.value");
+  let result_rolls = parent.find(".result_div .result.rolls");
   let best_dom = parent.find(".roll_result_container .best").first();
   let worst_dom = parent.find(".roll_result_container .worst").first();
 
-  console.log(`Best: ${high} Worst: ${low}`);
   best_dom.text(String(high));
   worst_dom.text(String(low));
 
   let i = 0;
-  $.each(result_dom, function(key, value) {
-    $(value).text(String(rolls[i]));
+  $.each(result_totals, function(key, value) {
+    let rolled = roll_totals[i];
+    let modifier = modifiers[i];
+    $(value).text(String(rolled));
+    if (rolled === sides * dice + modifier) {
+      $(value).css('color', 'red');
+    } else if (rolled === dice + modifier) {
+      $(value).css('color', 'blue');
+    } else {
+      $(value).css('color', 'black');
+    }
+    i++;
+  });
+  i = 0;
+  $.each(result_rolls, function(key, value) {
+    $(value).text(`[${roll_dice[i]}]`);
     i++;
   });
 }
