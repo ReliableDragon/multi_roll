@@ -24,6 +24,9 @@
   display: block;
   clear: left;
   margin-top: 5px;
+  padding: 3px 2px;
+  overflow-x: auto;
+  width: 100%;
 }
 
 .rollset_rolls > div {
@@ -35,14 +38,24 @@
    display: flex;
    height: auto;
    overflow-x: auto;
+   margin: 7px 3px;
+   max-width: 100%;
 }
 
 .roll {
   float: left;
+  background: #FFFFFF;
+  border: 2px #CCCCCC;
+  border-style: solid;
+  padding: 2px 5px;
+  width: 7em;
+  min-width: 7em;
+  overflow-x: auto;
 }
 
 .add_roll_div {
   clear: left;
+  margin: auto 3px;
 }
 
 .title_row_div {
@@ -76,28 +89,29 @@
   vertical-align: middle;
   height: inherit;
   font-size: 2em;
+  min-width: 5em;
 }
 
 .roll_result_container > .roll_result_line {
 }
 
-.roll_result_line {
-  /* display: inline; */
+/* .roll_result_text.result {
+  font-size: 1.25em;
+} */
+.result.value {
+  font-size: 1.5em;
 }
 
 .roll_result_line > * {
   float: left;
   margin-top: 2px;
   margin-bottom: 2px;
-  /* display: table-cell; */
 }
 
- .roll_result_text {
+ .roll_result_text.result {
+   margin-top: 0.5em;
+   margin-right: 3px;
    clear: left;
- }
-
- .result_div {
-   /* display: inline-block; */
  }
 
  .roll_result_line > .value {
@@ -105,7 +119,6 @@
  }
 
  .remove_roll {
-    /* display: block; */
     margin-block-start: 2.5em;
     margin-block-end: 1em;
 
@@ -117,7 +130,7 @@
 
 .roll > p {
   margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.4em;
 }
 
 .data_storage {
@@ -130,4 +143,12 @@
 
 .add_roll {
   height: 2em;
+}
+
+#add_rollset_dice {
+  width: 5em;
+}
+
+#add_rollset_sides {
+  width: 5em;
 }
