@@ -4,14 +4,16 @@ class Roll {
     this.sides = sides;
   }
 
-  roll(modifier) {
+  roll(modifier=0) {
     let rolled_values = []
+    let total = 0;
     for (let i = 0; i < this.num; i++) {
       let value = Math.ceil(Math.random() * this.sides);
+      total += value;
       rolled_values.push(value);
     }
-    let total = Math.sum(rolled_values) + modifier;
-    return RollResults(value, rolled_values, _isMax(roll_result, modifier), _isMin(roll_result, modifier));
+    total += modifier;
+    return new RollResult(total, rolled_values, this._isMax(total, modifier), this._isMin(total, modifier));
   }
 
   max() {
@@ -31,7 +33,7 @@ class Roll {
   }
 }
 
-class RollResults {
+class RollResult {
   constructor(total, values, is_max, is_min) {
     this.total = total;
     this.values = values;
@@ -59,10 +61,11 @@ class Rollset {
   }
 
   addEntry(name, modifier, damage_modifier=null) {
-    if (damage_modifier !== null && !this.hasDamage()) {
-      throw Exception("Can't add damage to RollGroup that doesn't have damage!");
-    }
     this.entries.push(new RollEntry(name, modifier, damage_modifier));
+  }
+
+  removeEntry(index) {
+    this.entries.splice(index, 1);
   }
 
   getRollResults() {
@@ -93,7 +96,8 @@ class Rollset {
   }
 
   rollInitiative() {
-    let initiative = new Roll(1, 20).roll() + this.initiative_bonus;
+    let roll = new Roll(1, 20).roll();
+    let initiative = roll.total + this.initiative_bonus;
     this.initiative = initiative;
     return initiative;
   }
@@ -106,12 +110,12 @@ $(document).ready(function() {
   // $("#add_new_rollset").click(add_rollset);
 
   let rollset = _add_rollset("roll", "Goblin Attacks", 1, 20);
-  // _add_roll_to_rollset(rollset, "Goblin Warrior", 10);
-  // _add_roll_to_rollset(rollset, "Goblin Wizard", -10);
+  _add_roll_to_rollset(rollset, "Goblin Warrior", 10);
+  _add_roll_to_rollset(rollset, "Goblin Wizard", -10);
 
   let rollset2 = _add_rollset("attack", "Goblin Attacks w/ Damage", 1, 20, 3, 2, 8);
-  // _add_roll_to_rollset(rollset2, "Goblin Warrior", 3);
-  // _add_roll_to_rollset(rollset2, "Goblin Wizard", -2);
+  _add_roll_to_rollset(rollset2, "Goblin Warrior", 3, 5);
+  _add_roll_to_rollset(rollset2, "Goblin Wizard", -2, -3);
 
   // add_rollset();
 });
@@ -131,6 +135,7 @@ let add_rollset = function(e) {
   let damage_dice = rollset_damage_dice_input.val();
   let damage_sides = rollset_damage_sides_input.val();
   let initiative_bonus = rollset_initiative_bonus_input.val();
+  console.log(initiative_bonus)
   rollset_name_input.val("");
   rollset_dice_input.val("");
   rollset_sides_input.val("");
@@ -139,7 +144,7 @@ let add_rollset = function(e) {
   rollset_initiative_bonus_input.val("");
   let rollset_index = self.rollsets.length;
   if (!name) {
-    name = "Rollset " + String(rollset_index);
+    name = "Rollset " + String(rollset_index + 1);
   }
   if (!dice) {
     dice = 1;
@@ -159,8 +164,7 @@ let add_rollset = function(e) {
 let _add_rollset = function(type, name, dice, sides, initiative_bonus, damage_dice, damage_sides) {
   let rollset_index = self.rollsets.length;
   let rollset = _add_rollset_obj(type, name, dice, sides, initiative_bonus, damage_dice, damage_sides);
-  _add_rollset_dom(rollset, rollset_index);
-
+  return _add_rollset_dom(rollset, rollset_index);
 }
 
 var check_enter_rollset = function(event) {
@@ -191,6 +195,9 @@ let _add_rollset_dom = function(rollset, rollset_index) {
 
   newrollset.find(".rollset_name").text(rollset.name);
 
+  let maybe_plus = rollset.initiative_bonus >= 0 ? "+" : "";
+  newrollset.find(".rollset_roll_group_initiative").text(`Group Initiative: ${maybe_plus}${rollset.initiative_bonus}`)
+
   let roll_summary = newrollset.find(".roll_summary").first();
   let damage_summary = newrollset.find(".damage_summary").first();
 
@@ -201,7 +208,11 @@ let _add_rollset_dom = function(rollset, rollset_index) {
     damage_summary.text(damage_summary_text);
   } else {
     damage_summary.css("display", "none");
+    newrollset.find(".damage_modifier").css("display", "none");
   }
+
+  let roll_placeholder = _get_roll_placeholder(rollset.hasDamage());
+  newrollset.find(".rollset_rolls").first().append(roll_placeholder);
 
   rollsets_dom.append(newrollset);
   $("#rollsets .remove_row").off("click");
@@ -222,11 +233,18 @@ let _add_rollset_dom = function(rollset, rollset_index) {
   return newrollset;
 };
 
-var _get_roll_placeholder = function() {
-  let roll_placeholder = $("#roll_template").clone();
-  roll_placeholder.removeAttr("id");
+var _get_roll = function(has_damage) {
+  let roll = $("#roll_template").clone();
+  roll.removeAttr("id");
+  if (!has_damage) {
+    roll.find(".roll_damage_section").first().css("display", "none");
+  }
+  return roll;
+}
+
+var _get_roll_placeholder = function(has_damage) {
+  let roll_placeholder = _get_roll(has_damage);
   roll_placeholder.addClass("placeholder");
-  roll_placeholder.css("visibility", "hidden");
 
   return roll_placeholder;
 }
@@ -247,8 +265,18 @@ var rollGroupInitiative = function(e) {
 var rollInitiative = function(e) {
   let rollset = $(event.target).parents(".rollset").first();
   let index = Number(rollset.data("index"));
-  let initiative = rollsets[index].rollInitiative();
-  rollset.find(".rollset_group_initiative").text("[" + String(initiative) + "]");
+
+  let rolls = rollset.find(".roll");
+
+  let i = 0;
+  // Loop over all rollset elements
+  $.each(rolls, function(key, value) {
+    let element = $(value);
+    let initiative = rollsets[index].rollInitiative();
+    let initiative_dom = element.find(".roll_individual_initiative").first();
+    initiative_dom.text(`[${initiative}]`)
+    initiative_dom.css("visibility", "visible");
+  });
 }
 
 // var forEachRollsetEntry = function(cb) {
@@ -270,14 +298,14 @@ var multiroll = function(e) {
   let roll_results = rollset.getRollResults();
   let damage_results = rollset.getDamageRollResults();
 
-  if (roll_results.values.length === 0) {
+  if (roll_results.length === 0) {
     return;
   }
 
   let high = Math.max(...roll_results.map(x => x.total));
   let low = Math.min(...roll_results.map(x => x.total));
 
-  let roll_result_containers = parent.find(".roll_result_container");
+  let rolls = parent.find(".roll");
   let result_rolls = parent.find(".result_div .result.rolls");
   let best_dom = parent.find(".roll_result_container .best").first();
   let worst_dom = parent.find(".roll_result_container .worst").first();
@@ -287,9 +315,9 @@ var multiroll = function(e) {
 
   let i = 0;
   // Loop over all rollset elements
-  $.each(roll_result_containers, function(key, value) {
+  $.each(rolls, function(key, value) {
     let element = $(value);
-    let roll_summary = element.find(".roll_summary").first();
+    let roll_summary = element.find(".roll_total").first();
     roll_summary.text(roll_results[i].total)
     setRollColors(roll_summary, roll_results[i]);
 
@@ -297,7 +325,7 @@ var multiroll = function(e) {
     roll_dice.text(`[${roll_results[i].values}]`);
 
     if (damage_results !== null) {
-      let damage_summary = element.find(".damage_summary").first();
+      let damage_summary = element.find(".damage_total").first();
       damage_summary.text(damage_results[i].total)
       setRollColors(damage_summary, damage_results[i]);
 
@@ -309,16 +337,26 @@ var multiroll = function(e) {
 }
 
 var remove_roll = function(e) {
-  let parent = $(event.target).parent(".roll");
+  let parent = $(event.target).parents(".roll");
   let index = Number(parent.data("index"));
   let rollset_dom = parent.parents(".rollset");
   let rollset_index = Number(rollset_dom.data("index"));
   let grandparent = parent.parent();
 
+  let rollset = rollsets[rollset_index];
+  rollset.removeEntry(index);
+
+  $.each(rollset_dom.find(".roll"), function(key, value) {
+    element = $(value);
+    let idx = element.data("index");
+    if (idx > index) {
+      element.attr("data-index", idx - 1);
+    }
+  });
+
   parent.remove();
-  console.log(grandparent.children(".roll").length);
-  if (!grandparent.children(".roll").length == 0) {
-    let roll_placeholder = _get_roll_placeholder();
+  if (!grandparent.find(".roll").length === 0) {
+    let roll_placeholder = _get_roll_placeholder(rollset.hasDamage());
     grandparent.append(roll_placeholder);
   }
 }
@@ -331,41 +369,58 @@ var remove_rollset = function(e) {
   let index = Number(parent.data("index"));
   parent.remove();
   rollsets.splice(index, 1)
+
+  $.each($.find(".rollset"), function(key, value) {
+    element = $(value);
+    let idx = element.data("index");
+    if (idx > index) {
+      element.attr("data-index", idx - 1);
+    }
+  });
 }
 
 var add_roll_to_rollset = function(e) {
-  let rollset_dom = $(event.target).parent(".rollset");
-  let roll_name = rollset_dom.children(".roll_name").first().val();
-  let roll_modifier = rollset_dom.children(".roll_modifier").first().val();
-  let damage_modifier = rollset_dom.children("damage_modifier").first().val();
+  let rollset_dom = $(event.target).parents(".rollset");
+  let roll_name = rollset_dom.find(".roll_name_input").first().val();
+  let roll_modifier = rollset_dom.find(".roll_modifier_input").first().val();
+  let damage_modifier = rollset_dom.find("damage_modifier_input").first().val();
+  console.log(`${roll_name}, ${roll_modifier}, ${damage_modifier}`)
 
   _add_roll_to_rollset(rollset_dom, roll_name, roll_modifier, damage_modifier);
 }
 
-var _add_roll_to_rollset = function(rollset_dom, name, roll_modifier, damage_modifier) {
-  let index = Number(rollset_dom.data("index"));
-  let rollset = rollsets[index];
-  rollset.add
-
-  rollset_dom.find(".rollset_rolls > .placeholder").remove();
-
+var _add_roll_to_rollset = function(rollset_dom, name, roll_modifier, damage_modifier='') {
   roll_modifier = Number(roll_modifier);
   damage_modifier = Number(damage_modifier);
+
+  let index = Number(rollset_dom.data("index"));
+  let rollset = rollsets[index];
 
   if (!name) {
     name = "#" + String(rollset.numEntries() + 1);
   }
 
-  let rolls_dom = rollset_dom.children(".rollset_rolls").first();
-  let newroll = $("#roll_template").clone();
+  rollset.addEntry(name, roll_modifier, damage_modifier);
 
-  let maybe_plus = modifier >= 0 ? "+" : "";
-  modifier = maybe_plus + String(modifier);
+  rollset_dom.find(".placeholder").remove();
 
-  newroll.children(".name").text(name);
-  newroll.children(".modifier").text(String(modifier));
+  let newroll = _get_roll(rollset.hasDamage());
   newroll.removeAttr("id");
-  rolls_div.append(newroll);
+  // -1 because we already added this entry.
+  newroll.attr("data-index", rollset.numEntries() - 1);
+  newroll.find(".roll_name").first().text(name);
+
+  let maybe_plus = roll_modifier >= 0 ? "+" : "";
+  roll_modifier = maybe_plus + String(roll_modifier);
+  newroll.find(".roll_modifier").text(String(roll_modifier));
+
+  if (rollset.hasDamage()) {
+    maybe_plus = damage_modifier >= 0 ? "+" : "";
+    damage_modifier = maybe_plus + String(damage_modifier);
+    newroll.find(".damage_modifier").text(String(damage_modifier));
+  }
+
+  rollset_dom.find(".rollset_rolls").first().append(newroll);
 
   $("#rollsets .remove_roll").off("click");
   $("#rollsets .remove_roll").click(remove_roll);
@@ -374,7 +429,7 @@ var _add_roll_to_rollset = function(rollset_dom, name, roll_modifier, damage_mod
 }
 
 var save_data = function(e) {
-  let rollsets = $("#rollsets").children(".rollset");
+  let rollsets = $("#rollsets").find(".rollset");
   let data = [];
   $.each(rollsets, function(key, value) {
     let rollset_data = [];
@@ -388,8 +443,8 @@ var save_data = function(e) {
     let rolls = rollset.find(".roll");
     $.each(rolls, function(key, value) {
       let roll = $(value);
-      let name = roll.children(".name").first().text();
-      let modifier = roll.children(".modifier").first().text();
+      let name = roll.find(".name").first().text();
+      let modifier = roll.find(".modifier").first().text();
       rollset_data.push({"name": name, "modifier": modifier});
     });
     data.push({"name": rollset_name, "dice": dice, "sides": sides, "rolls": rollset_data});
@@ -413,5 +468,5 @@ var load_data = function(e) {
 }
 
 var clear_data = function() {
-  $("#rollsets").children().remove();
+  $("#rollsets").find().remove();
 }

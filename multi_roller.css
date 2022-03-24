@@ -1,10 +1,10 @@
-/* #rollset_template {
+#rollset_template {
   display: none;
 }
 
 #roll_template {
   display: none;
-} */
+}
 
 #roll_button_template {
   display: none;
@@ -18,6 +18,17 @@
   display: block;
 }
 
+.placeholder {
+  visibility: hidden;
+}
+
+.roll_individual_initiative {
+  visibility: hidden;
+}
+
+html {
+  background: #EEEEEE;
+}
 
 .rollset {
   border: 2px black;
@@ -28,6 +39,32 @@
   padding: 3px 2px;
   overflow-x: auto;
   width: 100%;
+  background: #EEEEEE
+}
+
+.roll {
+  float: left;
+  display: flex;
+  flex-direction: column;
+  background: #DDDDDD;
+  border: 2px #CCCCCC;
+  border-style: solid;
+  padding: 2px 5px;
+  width: 7em;
+  min-width: 9em;
+  overflow-x: auto;
+}
+
+.roll_damage_section {
+  border: 2px #DDDDDD;
+  border-style: solid;
+  background: #FFCCCC;
+}
+
+.roll_roll_section {
+  border: 2px #DDDDDD;
+  border-style: solid;
+  background: #CCFFCC;
 }
 
 .rollset_rolls > div {
@@ -41,19 +78,6 @@
    overflow-x: auto;
    margin: 7px 3px;
    max-width: 100%;
-}
-
-.roll {
-  float: left;
-  display: flex;
-  flex-direction: column;
-  background: #FFFFFF;
-  border: 2px #CCCCCC;
-  border-style: solid;
-  padding: 2px 5px;
-  width: 7em;
-  min-width: 7em;
-  overflow-x: auto;
 }
 
 .result_line_start {
@@ -70,15 +94,20 @@
   font-weight: bold;
 }
 
-.dmg_header {
+.header {
   display: flex;
   flex-direction: row;
+}
+
+.modifier {
+  padding-right: 0.3em;
 }
 
 .roll_name_row {
   display: flex;
   flex-direction: row;
   align-items: baseline;
+  min-height: 3em;
 }
 
 .add_roll_div {
