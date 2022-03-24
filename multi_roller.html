@@ -14,61 +14,102 @@
     <input id="data_loader" type=text />
   </div>
 
-  <div class="add_rollset_container">
-    <button id="add_rollset">Add Roll Set</button>
-    <input type="text" id="add_rollset_name" placeholder="Roll Set Name" onkeypress="check_enter_rollset(event)"/>
-    Rolling
-    <input type="number" id="add_rollset_dice" placeholder="# Dice" onkeypress="check_enter_rollset(event)" value=1 />
-    d
-    <input type="number" id="add_rollset_sides" placeholder="# Sides" onkeypress="check_enter_rollset(event)" value=20 />
-  </div>
-
-  <div id="rollsets"></div>
-
-  <div id="rollset_template" class="rollset">
-    <div class="title_row_div">
-      <h2 class="rollset_name"></h2>
-      <div class="remove_row">Remove Row</div>
+  <div id="rollset_builder">
+    <button id="add_new_rollset" onclick="add_new_rollset()">Add Roll Set</button>
+    <select id="rollset_builder_type" onchange="change_rollset_builder_type">
+      <option value="attack">Attack</option>
+      <option value="roll">Roll</option>
+    </select>
+    <div id="roll_values">
+      <input type="text" id="rollset_builder_name" placeholder="Roll Set Name" onkeypress="check_enter_rollset(event)"/>
+      Rolling
+      <input type="number" class="dice_input" id="rollset_builder_dice" placeholder="# Dice" onkeypress="check_enter_rollset(event)" value=1 />
+      d
+      <input type="number" class="dice_input" id="rollset_builder_sides" placeholder="# Sides" onkeypress="check_enter_rollset(event)" value=20 />
     </div>
-
-    <div class="rollset_rolls">
-    </div>
-
-    <div class="add_roll_div">
-      <input type="text" class="roll_name" placeholder="Roll Name" />
-      <input type="number" class="roll_modifier" placeholder="Roll Modifier" />
-      <button class="add_roll">Add Roll</button>
+    <div id="attack_values">
+      and
+      <input type="number" class="dice_input" id="rollset_builder_damage_dice" placeholder="# Dice" onkeypress="check_enter_rollset(event)" value=2 />
+      d
+      <input type="number" class="dice_input" id="rollset_builder_damage_sides" placeholder="# Sides" onkeypress="check_enter_rollset(event)" value=8 />
+      damage dice, with a +
+      <input type="number" class="dice_input" id="rollset_builder_initiative_bonus" placeholder="Initiative Bonus" onkeypress="check_enter_rollset(event)" value=0 />
     </div>
   </div>
 
-  <input type=button id="roll_button_template" class="roll_button" value="Multi-Roll!"></input>
+  <div id="rollsets">
+    <div id="rollset_template" class="rollset">
+      <div class="rollset_title_row">
+        <div class="rollset_group_initiative"></div>
+        <h2 class="rollset_name">TEMPLATE_NAME</h2>
+        <div class="rollset_roll_group_initiative">Group Initiative</div>
+        <div class="remove_row">Remove Row</div>
+      </div>
 
-  <div class="roll" id="roll_template">
-    <p class="name">NAME</p>
-    <p class="modifier">MOD</p>
-    <div class="result_div rolls_result_line">
-      <p class="result_text">Rolls: </p>
-      <p class="result rolls">[0]</p>
-    </div>
-    <div class="result_div roll_result_line">
-      <p class="result_text result">Result: </p>
-      <p class="result value">0</p>
-    </div>
-    <div class="remove_roll">Remove</div>
-  </div>
+      <div class="rollset_rolls">
+        <div class="roll_buttons">
+          <input type=button class="multiroll_button roll_button" value="Multi-Roll!"></input>
+          <input type=button class="roll_initiative_button roll_button" value="Roll Initiative."></input>
+        </div>
 
-  <div class="roll_result_container" id="roll_result_template">
-    <div class="roll_details_div roll_result_line">
-      <p class="result_text">Roll: </p>
-      <p class="value roll_data">1d20</p>
-    </div>
-    <div class="best_div roll_result_line">
-      <p class="result_text">Best: </p>
-      <p class="best value">0</p>
-    </div>
-    <div class="worst_div roll_result_line">
-      <p class="result_text">Worst: </p>
-      <p class="worst value">0</p>
+        <div class="roll_result_container">
+          <div class="roll_details_div result_line">
+            <p class="roll_summary">Roll: 1d20</p>
+          </div>
+          <div class="roll_details_div result_line">
+            <p class="damage_summary">Dmg: 2d8</p>
+          </div>
+          <div class="best_div result_line">
+            <p class="result_line_start">Best: </p>
+            <p class="best emphasized">0</p>
+          </div>
+          <div class="worst_div result_line">
+            <p class="result_line_start">Worst: </p>
+            <p class="worst emphasized">0</p>
+          </div>
+        </div>
+
+        <div class="roll" id="roll_template">
+          <div class="roll_name_row ">
+            <div class="roll_individual_initiative">[0]</div>
+            <div class="name">NAME</div>
+          </div>
+          <!-- <div class="modifier">MOD</div> -->
+          <div class="roll_dmg_section">
+            <div class="dmg_header">
+              <div class="dmg_modifier">+3</div>
+              <div>Damage:</div>
+            </div>
+            <div class="result_line">
+              <div class="result_line_start">Rolls: </div>
+              <div class="damage_rolls">[0]</div>
+            </div>
+            <div class="result_line">
+              <div class="result_line_start">Total: </div>
+              <div class="damage_total emphasized large">0</div>
+            </div>
+          </div>
+          <div class="roll_roll_section">
+            <div>Roll</div>
+            <div class="result_line">
+              <div class="result_line_start">Rolls: </div>
+              <div class="roll_rolls">[0]</div>
+            </div>
+            <div class="result_line">
+              <div class="result_line_start">Result: </div>
+              <div class="roll_total emphasized large">0</div>
+            </div>
+          </div>
+          <div class="remove_roll">Remove</div>
+        </div>
+      </div>
+
+      <div class="add_roll_div">
+        <input type="text" class="roll_name" placeholder="Roll Name" />
+        <input type="number" class="roll_modifier" placeholder="Roll Modifier" />
+        <input type="number" class="damage_modifier" placeholder="Damage Modifier" />
+        <button class="add_roll">Add Roll</button>
+      </div>
     </div>
   </div>
 

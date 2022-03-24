@@ -1,10 +1,10 @@
-#rollset_template {
+/* #rollset_template {
   display: none;
 }
 
 #roll_template {
   display: none;
-}
+} */
 
 #roll_button_template {
   display: none;
@@ -17,6 +17,7 @@
 #rollsets {
   display: block;
 }
+
 
 .rollset {
   border: 2px black;
@@ -44,6 +45,8 @@
 
 .roll {
   float: left;
+  display: flex;
+  flex-direction: column;
   background: #FFFFFF;
   border: 2px #CCCCCC;
   border-style: solid;
@@ -53,13 +56,50 @@
   overflow-x: auto;
 }
 
+.result_line_start {
+  margin-top: 0.5em;
+  margin-right: 3px;
+  clear: left;
+}
+
+.roll .large {
+  font-size: 1.5em;
+}
+
+.emphasized {
+  font-weight: bold;
+}
+
+.dmg_header {
+  display: flex;
+  flex-direction: row;
+}
+
+.roll_name_row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
 .add_roll_div {
   clear: left;
   margin: auto 3px;
 }
 
-.title_row_div {
+.roll_individual_initiative {
+  margin-right: 0.25em;
+}
+
+.rollset_title_row {
   display: flex;
+  align-items: baseline;
+}
+
+.rollset_roll_group_initiative {
+  color: gray;
+  padding: 0 0.5em;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .remove_row {
@@ -69,10 +109,28 @@
   cursor: pointer;
 }
 
+.rollset_rolls {
+  height: inherit;
+}
+
+.roll_buttons {
+  height: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
 .roll_button {
   display: inline-block;
   float: left;
   height: inherit;
+}
+
+.multiroll_button {
+  flex-grow: 7;
+}
+
+.roll_initiative_button {
+  flex-grow: 1;
 }
 
 .rollset_name {
@@ -92,31 +150,15 @@
   min-width: 5em;
 }
 
-.result.value {
+.rollset_group_initiative {
   font-size: 1.5em;
 }
 
-.roll_result_line > * {
+.result_line > * {
   float: left;
   margin-top: 2px;
   margin-bottom: 2px;
 }
-
-.rolls_result_line > * {
-  float: left;
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
- .result_text.result {
-   margin-top: 0.5em;
-   margin-right: 3px;
-   clear: left;
- }
-
- .roll_result_line > .value {
-   font-weight: bold;
- }
 
  .remove_roll {
     margin-block-start: 2.5em;
@@ -128,16 +170,11 @@
     cursor: pointer;
  }
 
-.roll > p {
-  margin-top: 0.5em;
-  margin-bottom: 0.4em;
-}
-
 .data_storage {
   margin: 1em auto;
 }
 
-#add_rollset {
+#add_new_rollset {
   height: 2em;
 }
 
@@ -145,10 +182,6 @@
   height: 2em;
 }
 
-#add_rollset_dice {
-  width: 5em;
-}
-
-#add_rollset_sides {
+.dice_input {
   width: 5em;
 }
