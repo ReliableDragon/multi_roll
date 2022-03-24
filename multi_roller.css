@@ -26,8 +26,22 @@
   visibility: hidden;
 }
 
+.roll_health_row {
+  display: block;
+  flex-direction: row;
+  /* align-items: center; */
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5em;
+  color: darkred;
+}
+
 html {
   background: #EEEEEE;
+}
+
+.construction_options {
+  display:inline;
 }
 
 .rollset {
